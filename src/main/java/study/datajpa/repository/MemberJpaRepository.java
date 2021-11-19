@@ -53,5 +53,25 @@ public class MemberJpaRepository {
                 .getResultList();
     }
 
+    /**
+     * 페이징 처리
+     * @param age 나이
+     * @param offset 어디서
+     * @param limit 개수
+     * @return
+     */
+    public List<Member> findByPage(Long age, int offset, int limit) {
+        return em.createQuery("select m from Member m where m.age = :age order by m.username desc")
+                .setParameter("age", age)
+                .setFirstResult(offset) // 어디서 부터 가져올 것인지
+                .setMaxResults(limit) // 몇 개를 가져올 것인지
+                .getResultList();
+    }
+
+    public long totalCount(Long age) {
+        return em.createQuery("select count(m) from Member m where m.age = :age", Long.class)
+                .setParameter("age", age)
+                .getSingleResult();
+    }
 
 }
