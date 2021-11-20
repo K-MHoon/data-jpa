@@ -45,6 +45,10 @@ public class Member {
         this.team.getMembers().add(this);
     }
 
+    public void changeUsername(String username) {
+        this.username = username;
+    }
+
     public Member(String username, Long age, Team team) {
         this.username = username;
         this.age = age;
