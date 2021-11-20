@@ -3,6 +3,10 @@ package study.datajpa.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
@@ -168,5 +172,45 @@ class MemberRepositoryTest {
 
         List<Member> result = memberRepository.findListByUsername("afefeaw");
         System.out.println("result.size() = " + result.size());
+    }
+
+    @Test
+    public void paging() {
+        memberRepository.save(new Member("member1", 10L));
+        memberRepository.save(new Member("member2", 10L));
+        memberRepository.save(new Member("member3", 10L));
+        memberRepository.save(new Member("member4", 10L));
+        memberRepository.save(new Member("member5", 10L));
+        memberRepository.save(new Member("member6", 10L));
+
+        long age = 10L;
+        int offset = 0;
+        int limit = 3;
+
+        PageRequest pageRequest = PageRequest.of(offset, limit, Sort.by(Sort.Direction.DESC, "username"));
+
+        Page<Member> members = memberRepository.findByAge(age, pageRequest);
+//        Slice<Member> members = memberRepository.findByAge(age, pageRequest);
+
+        // then
+        List<Member> content = members.getContent();
+        long totalElements = members.getTotalElements();
+
+        Page<MemberDto> toMap = members.map(m -> new MemberDto(m.getId(), m.getUsername(), null));
+
+
+        // Page
+        assertThat(content.size()).isEqualTo(3);
+        assertThat(members.getTotalElements()).isEqualTo(6);
+        assertThat(members.getNumber()).isEqualTo(0);
+        assertThat(members.getTotalPages()).isEqualTo(2);
+        assertThat(members.isFirst()).isTrue();
+        assertThat(members.hasNext()).isTrue();
+
+        // Slice
+//        assertThat(content.size()).isEqualTo(3);
+//        assertThat(members.getNumber()).isEqualTo(0);
+//        assertThat(members.isFirst()).isTrue();
+//        assertThat(members.hasNext()).isTrue();
     }
 }
