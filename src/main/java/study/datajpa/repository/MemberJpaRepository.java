@@ -74,4 +74,15 @@ public class MemberJpaRepository {
                 .getSingleResult();
     }
 
+    /**
+     * 벌크 수정 쿼리
+     * @param age 나이
+     * @return int
+     */
+    public int bulkAgePlus(Long age) {
+        return em.createQuery("update Member m set m.age = m.age + 1 where m.age >= :age")
+                .setParameter("age", age)
+                .executeUpdate();
+    }
+
 }

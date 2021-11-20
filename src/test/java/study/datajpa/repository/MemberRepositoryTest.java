@@ -7,11 +7,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
+@Rollback(false)
 class MemberRepositoryTest {
 
     @Autowired
@@ -28,6 +32,9 @@ class MemberRepositoryTest {
 
     @Autowired
     TeamRepository teamRepository;
+
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() {
@@ -212,5 +219,34 @@ class MemberRepositoryTest {
 //        assertThat(members.getNumber()).isEqualTo(0);
 //        assertThat(members.isFirst()).isTrue();
 //        assertThat(members.hasNext()).isTrue();
+    }
+
+
+    /**
+     * 벌크 업데이트 테스트 by JpaRepository;
+     */
+    @Test
+    public void bulkUpdate() {
+        // given
+        memberRepository.save(new Member("member1", 10L));
+        memberRepository.save(new Member("member2", 19L));
+        memberRepository.save(new Member("member3", 21L));
+        memberRepository.save(new Member("member4", 20L));
+        memberRepository.save(new Member("member5", 40L));
+        memberRepository.save(new Member("member6", 30L));
+
+        // when
+        int resultCount = memberRepository.bulkAgePlus(20L);
+//        em.flush();
+//        em.clear();
+
+        List<Member> result = memberRepository.findByUsername("member5");
+        Member member5 = result.get(0);
+        System.out.println("member5.getAge() = " + member5.getAge());
+
+
+        // then
+        assertThat(resultCount).isEqualTo(4);
+
     }
 }
