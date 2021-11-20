@@ -249,4 +249,79 @@ class MemberRepositoryTest {
         assertThat(resultCount).isEqualTo(4);
 
     }
+
+    @Test
+    public void findMemberLazy() {
+        //given
+
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("member1", 10L, teamA);
+        Member member2 = new Member("member2", 10L, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        em.flush();
+        em.clear();
+
+        //when
+        // select Member
+        List<Member> members = memberRepository.findAll();
+
+        //then
+        for (Member member : members) {
+            System.out.println("member = " + member.getUsername());
+            // 그냥 가져오면 프록시 객체 (가짜 객체)
+            System.out.println("member.getTeam().getClass() = " + member.getTeam().getClass());
+            // Team을 N번 만큼 가져온다. (실제로 DB에 요청을 날려서 초기화하는 과정)
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+
+        //Fetch 조인
+        List<Member> memberFetchJoin = memberRepository.findMemberFetchJoin();
+
+        for (Member member : memberFetchJoin) {
+            System.out.println("member.getUsername() = " + member.getUsername());
+            System.out.println("member.getTeam().getClass() = " + member.getTeam().getClass());
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+
+        //엔티티 그래프
+        List<Member> memberEntityGraph = memberRepository.findAll();
+
+        for (Member member : memberEntityGraph) {
+            System.out.println("member.getUsername() = " + member.getUsername());
+            System.out.println("member.getTeam().getClass() = " + member.getTeam().getClass());
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+
+        em.flush();
+        em.clear();
+
+        Member member3 = new Member("member1", 24L, teamB);
+        memberRepository.save(member3);
+
+        em.flush();
+        em.clear();
+
+        List<Member> member1List = memberRepository.findEntityGraphByUsername("member1");
+
+        for (Member member : member1List) {
+            System.out.println("member.getUsername() = " + member.getUsername());
+            System.out.println("member.getTeam().getClass() = " + member.getTeam().getClass());
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+
+        List<Member> namedEntityGraphByUsername = memberRepository.findNamedEntityGraphByUsername("member1");
+
+        for (Member member : namedEntityGraphByUsername) {
+            System.out.println("member.getUsername() = " + member.getUsername());
+            System.out.println("member.getTeam().getClass() = " + member.getTeam().getClass());
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+
+    }
 }
