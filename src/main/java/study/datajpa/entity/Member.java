@@ -19,7 +19,7 @@ import javax.persistence.*;
         name = "Member.all",
         attributeNodes = @NamedAttributeNode("team")
 )
-public class Member extends JpaBaseEntity {
+public class Member extends BaseEntity {
 
     @Id @GeneratedValue
     @Column(name = "member_id")
